@@ -1,13 +1,132 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useReducer, useState } from 'react';
+import { Link , useNavigate} from 'react-router-dom';
 import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
 import LogoDark from '../../images/logo/logo-dark.svg';
 import Logo from '../../images/logo/logo.svg';
-import DefaultLayout from '../../layout/DefaultLayout';
+import LoginLayout from '../../layout/LoginLayout';
+import { useAuthContext } from "../../auth/AuthContext";
+import { postRequest } from '../../utils/Axios';
+import { message } from 'antd';
+import { urls } from '../../utils/urls';
+import { isValidToken, setSession } from "../../auth/utils";
+
+
+type AuthUserType = {
+  companyId: string;
+  companyName: string;
+  email: string;
+  id: string;
+  name: string;
+  role: string;
+  isSuperAdmin: boolean;
+  logo?:string
+} | null;
+const initialState: AuthStateType = {
+  isInitialized: false,
+  isAuthenticated: false,
+  user: null,
+};
+
+type AuthStateType = {
+  isInitialized: boolean;
+  isAuthenticated: boolean;
+  user: AuthUserType;
+};
+type ActionMapType<T extends { [index: string]: any }> = {
+  [Key in keyof T]: T[Key] extends undefined
+    ? {
+        type: Key;
+      }
+    : {
+        type: Key;
+        payload: T[Key];
+      };
+};
+
+type Payload = {
+  ["INITIAL"]: {
+    isAuthenticated: boolean;
+    user: AuthUserType;
+  };
+  ["LOGIN"]: {
+    user: AuthUserType;
+  };
+  ["LOGOUT"]: undefined;
+};
+
+type ActionType = ActionMapType<Payload>[keyof ActionMapType<Payload>];
+
+const reducer = (state: AuthStateType, action: ActionType) => {
+  if (action.type === "INITIAL") {
+    return {
+      isAuthenticated: action.payload.isAuthenticated,
+      user: action.payload.user,
+      isInitialized: true,
+    };
+  }
+
+  if (action.type === "LOGIN") {
+    return {
+      ...state,
+      isAuthenticated: true,
+      isInitialized:false,
+      user: action.payload.user,
+    };
+  }
+
+  if (action.type === "LOGOUT") {
+    return {
+      ...state,
+      isAuthenticated: false,
+      user: null,
+    };
+  }
+
+  return state;
+};
 
 const SignIn: React.FC = () => {
+  // const { login } = useAuthContext();
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  const login = async (email: string, password: string) => {
+    try {
+      const response: any = await postRequest(urls.login, { email, password });
+
+      const { accessToken, ...user } = response;
+      console.log("Response",response);
+      setSession(accessToken);
+      navigate("/")
+      dispatch({
+        type: "LOGIN",
+        payload: {
+          user,
+        },
+      });
+    } catch (error) {
+      console.error("Error logging in:", error);
+      message.error("Error logging in");
+    }
+  };
+
+
+  const handleLogin = async () => {
+    const body={email, password}
+    try {
+      login(body.email, body.password);
+    } catch (error) {
+      console.log("error");
+    }
+  };
+
+
   return (
-    <DefaultLayout>
+    <LoginLayout>
       <Breadcrumb pageName="Sign In" />
 
       <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -153,7 +272,7 @@ const SignIn: React.FC = () => {
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
               <span className="mb-1.5 block font-medium">Start for free</span>
               <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-                Sign In to TailAdmin
+                Sign In to Assessmart
               </h2>
 
               <form>
@@ -165,6 +284,8 @@ const SignIn: React.FC = () => {
                     <input
                       type="email"
                       placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
@@ -196,6 +317,8 @@ const SignIn: React.FC = () => {
                     <input
                       type="password"
                       placeholder="6+ Characters, 1 Capital letter"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
 
@@ -225,8 +348,9 @@ const SignIn: React.FC = () => {
 
                 <div className="mb-5">
                   <input
-                    type="submit"
+                    type="button"
                     value="Sign In"
+                    onClick={handleLogin}
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
                   />
                 </div>
@@ -281,7 +405,7 @@ const SignIn: React.FC = () => {
           </div>
         </div>
       </div>
-    </DefaultLayout>
+    </LoginLayout>
   );
 };
 

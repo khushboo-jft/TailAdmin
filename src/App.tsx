@@ -15,6 +15,11 @@ import Settings from './pages/Settings';
 import Tables from './pages/Tables';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
+import AuthProvider from './auth/AuthContext';
+import QuestionBank from './pages/QuestionBank';
+import PreviewEditor from './components/PreviewEditor';
+import TableAssessment from './components/TableAssessment';
+import CustomizeAssessment from './components/CustomizeAssessment';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -32,13 +37,50 @@ function App() {
     <Loader />
   ) : (
     <>
+    <AuthProvider>
       <Routes>
+      <Route
+          path="/login"
+          element={
+            <>
+              <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <SignIn />
+            </>
+          }
+        />
         <Route
-          index
+          path='/'
           element={
             <>
               <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
               <ECommerce />
+            </>
+          }
+        />
+        <Route
+          path='/question-bank'
+          element={
+            <>
+              <PageTitle title="Question Bank | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <QuestionBank />
+            </>
+          }
+        />
+        <Route
+          path='/assessment/:type'
+          element={
+            <>
+              <PageTitle title="Question Bank | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <TableAssessment />
+            </>
+          }
+        />
+        <Route
+          path='/assessment/customize/:id'
+          element={
+            <>
+              <PageTitle title="Customize Assessment | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <CustomizeAssessment />
             </>
           }
         />
@@ -69,6 +111,15 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/question/:id"
+          element={
+            <>
+              <PageTitle title="Preview Editor | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PreviewEditor />
+            </>
+          }
+        /> 
         <Route
           path="/forms/form-layout"
           element={
@@ -124,15 +175,6 @@ function App() {
           }
         />
         <Route
-          path="/auth/signin"
-          element={
-            <>
-              <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <SignIn />
-            </>
-          }
-        />
-        <Route
           path="/auth/signup"
           element={
             <>
@@ -142,6 +184,7 @@ function App() {
           }
         />
       </Routes>
+      </AuthProvider>
     </>
   );
 }

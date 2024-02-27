@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface CardDataStatsProps {
   title: string;
@@ -7,6 +8,7 @@ interface CardDataStatsProps {
   levelUp?: boolean;
   levelDown?: boolean;
   children: ReactNode;
+  type?: string;
 }
 
 const CardDataStats: React.FC<CardDataStatsProps> = ({
@@ -16,9 +18,14 @@ const CardDataStats: React.FC<CardDataStatsProps> = ({
   levelUp,
   levelDown,
   children,
+  type
 }) => {
+  const navigate = useNavigate()
+  const goToAssessment = () =>{
+    navigate(`/assessment/${type}`)
+  }
   return (
-    <div className="rounded-sm border border-stroke bg-white py-6 px-7.5 shadow-default dark:border-strokedark dark:bg-boxdark">
+    <div onClick={()=>goToAssessment()} className="rounded-sm border border-stroke bg-white py-6 px-7.5 shadow-default dark:border-strokedark dark:bg-boxdark">
       <div className="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4">
         {children}
       </div>
